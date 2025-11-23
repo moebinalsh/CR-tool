@@ -62,3 +62,12 @@
 - [x] Add user role editing in admin settings
 - [x] Add Google Workspace SSO configuration UI
 - [x] Test complete authentication flow
+
+## Notification System
+
+- [x] Verify login page is fully functional
+- [x] Add notification bell icon to dashboard header
+- [x] Implement backend procedure to get pending CRs for user
+- [x] Show notification count badge on bell icon
+- [x] Display dropdown with pending CRs when bell is clicked
+- [x] Link notifications to CR detail pages

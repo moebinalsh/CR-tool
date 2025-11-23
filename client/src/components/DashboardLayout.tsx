@@ -21,11 +21,12 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LogOut, PanelLeft } from "lucide-react";
+import { LogOut, PanelLeft, Bell } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { trpc } from "@/lib/trpc";
 
 
 
@@ -121,9 +122,11 @@ function DashboardLayoutContent({
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = navigation.find(item => item.href === location);
   const isMobile = useIsMobile();
+  const { data: pendingReviews = [] } = trpc.changeRequests.myPendingReviews.useQuery();
 
   useEffect(() => {
     if (isCollapsed) {
@@ -232,7 +235,70 @@ function DashboardLayoutContent({
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="p-3">
+          <SidebarFooter className="p-3 space-y-2">
+            {/* Notification Bell */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <div className="relative">
+                  <Bell className="h-5 w-5" />
+                  {pendingReviews.length > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-semibold">
+                      {pendingReviews.length}
+                    </span>
+                  )}
+                </div>
+                <span className="group-data-[collapsible=icon]:hidden text-sm">Notifications</span>
+              </button>
+
+              {/* Notification Dropdown */}
+              {showNotifications && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-background border rounded-lg shadow-lg z-50 max-h-96 overflow-hidden flex flex-col">
+                  <div className="p-3 border-b shrink-0">
+                    <h3 className="font-semibold text-sm">Pending Reviews</h3>
+                    <p className="text-xs text-muted-foreground">
+                      {pendingReviews.length} CR{pendingReviews.length !== 1 ? 's' : ''} awaiting review
+                    </p>
+                  </div>
+                  <div className="overflow-y-auto">
+                    {pendingReviews.length === 0 ? (
+                      <div className="p-4 text-center text-muted-foreground text-sm">
+                        No pending reviews
+                      </div>
+                    ) : (
+                      pendingReviews.map((cr) => (
+                        <a
+                          key={cr.id}
+                          href={`/change-requests/${cr.id}`}
+                          className="block p-3 hover:bg-accent border-b last:border-0 transition-colors"
+                          onClick={() => setShowNotifications(false)}
+                        >
+                          <div className="flex justify-between items-start gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">#{cr.id} - {cr.title}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Status: <span className="capitalize">{cr.status}</span>
+                              </p>
+                            </div>
+                            <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${
+                              cr.priority === 'critical' ? 'bg-red-100 text-red-700' :
+                              cr.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                              cr.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-blue-100 text-blue-700'
+                            }`}>
+                              {cr.priority}
+                            </span>
+                          </div>
+                        </a>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">

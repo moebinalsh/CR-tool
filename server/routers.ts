@@ -106,6 +106,17 @@ export const appRouter = router({
         rolledBack: allCRs.filter(cr => cr.status === "rolled_back").length,
       };
     }),
+
+    // Get pending CRs assigned to current user
+    myPendingReviews: protectedProcedure.query(async ({ ctx }) => {
+      const allCRs = await db.getAllChangeRequests();
+      
+      // Filter CRs that are assigned to this user and pending review
+      return allCRs.filter(cr => 
+        cr.assigneeId === ctx.user.id && 
+        (cr.status === "pending" || cr.status === "approved")
+      );
+    }),
   }),
 });
 
