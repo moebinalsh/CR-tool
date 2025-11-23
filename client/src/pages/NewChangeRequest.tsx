@@ -160,10 +160,6 @@ export default function NewChangeRequest() {
                   <SelectContent>
                     <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
-                    <SelectItem value="implemented">Implemented</SelectItem>
-                    <SelectItem value="rolled_back">Rolled Back</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

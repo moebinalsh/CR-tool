@@ -161,7 +161,11 @@ export default function ChangeRequests() {
                 </TableHeader>
                 <TableBody>
                   {filteredCRs.map((cr) => (
-                    <TableRow key={cr.id} className="cursor-pointer hover:bg-muted/50">
+                    <TableRow 
+                      key={cr.id} 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => setLocation(`/change-requests/${cr.id}`)}
+                    >
                       <TableCell className="font-medium">#{cr.id}</TableCell>
                       <TableCell>
                         <div className="space-y-1">

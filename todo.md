@@ -23,3 +23,12 @@
 - [x] Add search interface
 - [x] Write unit tests for backend procedures
 - [x] Test full application flow
+
+## New Feature Requests
+
+- [x] Add CR detail view page with click functionality
+- [x] Restrict status options during creation to "draft" and "pending" only
+- [x] Implement role-based approval (only admins or assignees can approve/reject)
+- [x] Update branding to match Salla colors and style
+- [x] Replace logo with Salla logo
+- [x] Update color scheme to Salla's teal/mint and dark teal colors

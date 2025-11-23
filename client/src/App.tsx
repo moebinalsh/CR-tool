@@ -8,6 +8,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
 import ChangeRequests from "./pages/ChangeRequests";
 import NewChangeRequest from "./pages/NewChangeRequest";
+import ChangeRequestDetail from "./pages/ChangeRequestDetail";
 import { LayoutDashboard, FileText, Plus } from "lucide-react";
 
 const navigation = [
@@ -32,6 +33,11 @@ function Router() {
       <Route path={"/new-change-request"}>
         <DashboardLayout navigation={navigation}>
           <NewChangeRequest />
+        </DashboardLayout>
+      </Route>
+      <Route path={"/change-requests/:id"}>
+        <DashboardLayout navigation={navigation}>
+          <ChangeRequestDetail />
         </DashboardLayout>
       </Route>
       <Route path={"/404"} component={NotFound} />
