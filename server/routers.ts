@@ -1,10 +1,12 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import * as db from "./db";
+import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -17,12 +19,104 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  users: router({
+    list: protectedProcedure.query(async () => {
+      return await db.getAllUsers();
+    }),
+  }),
+
+  changeRequests: router({
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string().min(1),
+        reason: z.string().min(1),
+        affectedResources: z.string().min(1),
+        assigneeId: z.number(),
+        prLink: z.string().optional(),
+        rollbackPlan: z.string().min(1),
+        status: z.enum(["draft", "pending", "approved", "rejected", "implemented", "rolled_back"]).default("draft"),
+        priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
+        scheduledDate: z.date().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user) {
+          throw new TRPCError({ code: "UNAUTHORIZED" });
+        }
+        
+        await db.createChangeRequest({
+          ...input,
+          createdById: ctx.user.id,
+        });
+        
+        return { success: true };
+      }),
+
+    list: protectedProcedure.query(async () => {
+      return await db.getAllChangeRequests();
+    }),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const cr = await db.getChangeRequestById(input.id);
+        if (!cr) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Change request not found" });
+        }
+        return cr;
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().min(1).optional(),
+        reason: z.string().min(1).optional(),
+        affectedResources: z.string().min(1).optional(),
+        assigneeId: z.number().optional(),
+        prLink: z.string().optional(),
+        rollbackPlan: z.string().min(1).optional(),
+        status: z.enum(["draft", "pending", "approved", "rejected", "implemented", "rolled_back"]).optional(),
+        priority: z.enum(["low", "medium", "high", "critical"]).optional(),
+        scheduledDate: z.date().optional(),
+        implementedAt: z.date().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateChangeRequest(id, data);
+        return { success: true };
+      }),
+
+    search: protectedProcedure
+      .input(z.object({ searchTerm: z.string() }))
+      .query(async ({ input }) => {
+        return await db.searchChangeRequests(input.searchTerm);
+      }),
+
+    getByStatus: protectedProcedure
+      .input(z.object({ status: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getChangeRequestsByStatus(input.status);
+      }),
+
+    getRecent: protectedProcedure
+      .input(z.object({ limit: z.number().default(10) }))
+      .query(async ({ input }) => {
+        return await db.getRecentChangeRequests(input.limit);
+      }),
+
+    stats: protectedProcedure.query(async () => {
+      const allCRs = await db.getAllChangeRequests();
+      
+      return {
+        total: allCRs.length,
+        draft: allCRs.filter(cr => cr.status === "draft").length,
+        pending: allCRs.filter(cr => cr.status === "pending").length,
+        approved: allCRs.filter(cr => cr.status === "approved").length,
+        rejected: allCRs.filter(cr => cr.status === "rejected").length,
+        implemented: allCRs.filter(cr => cr.status === "implemented").length,
+        rolledBack: allCRs.filter(cr => cr.status === "rolled_back").length,
+      };
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq, like, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { changeRequests, InsertChangeRequest, InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,84 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getAllUsers() {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  return await db.select().from(users);
+}
+
+export async function createChangeRequest(data: InsertChangeRequest) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  const result = await db.insert(changeRequests).values(data);
+  return result;
+}
+
+export async function getChangeRequestById(id: number) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  const result = await db.select().from(changeRequests).where(eq(changeRequests.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getAllChangeRequests() {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  return await db.select().from(changeRequests).orderBy(desc(changeRequests.createdAt));
+}
+
+export async function updateChangeRequest(id: number, data: Partial<InsertChangeRequest>) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  await db.update(changeRequests).set(data).where(eq(changeRequests.id, id));
+}
+
+export async function searchChangeRequests(searchTerm: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  
+  return await db.select()
+    .from(changeRequests)
+    .where(
+      or(
+        like(changeRequests.title, `%${searchTerm}%`),
+        like(changeRequests.reason, `%${searchTerm}%`),
+        like(changeRequests.affectedResources, `%${searchTerm}%`)
+      )
+    )
+    .orderBy(desc(changeRequests.createdAt));
+}
+
+export async function getChangeRequestsByStatus(status: string) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  return await db.select()
+    .from(changeRequests)
+    .where(eq(changeRequests.status, status as any))
+    .orderBy(desc(changeRequests.createdAt));
+}
+
+export async function getRecentChangeRequests(limit: number = 10) {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+  return await db.select()
+    .from(changeRequests)
+    .orderBy(desc(changeRequests.createdAt))
+    .limit(limit);
+}

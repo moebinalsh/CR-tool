@@ -21,16 +21,13 @@ import {
 } from "@/components/ui/sidebar";
 import { APP_LOGO, APP_TITLE, getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { LogOut, PanelLeft } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
-];
+
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 280;
@@ -39,8 +36,10 @@ const MAX_WIDTH = 480;
 
 export default function DashboardLayout({
   children,
+  navigation,
 }: {
   children: React.ReactNode;
+  navigation?: Array<{ name: string; href: string; icon: React.ComponentType<{ className?: string }> }>;
 }) {
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
@@ -99,7 +98,7 @@ export default function DashboardLayout({
         } as CSSProperties
       }
     >
-      <DashboardLayoutContent setSidebarWidth={setSidebarWidth}>
+      <DashboardLayoutContent setSidebarWidth={setSidebarWidth} navigation={navigation}>
         {children}
       </DashboardLayoutContent>
     </SidebarProvider>
@@ -109,11 +108,13 @@ export default function DashboardLayout({
 type DashboardLayoutContentProps = {
   children: React.ReactNode;
   setSidebarWidth: (width: number) => void;
+  navigation?: Array<{ name: string; href: string; icon: React.ComponentType<{ className?: string }> }>;
 };
 
 function DashboardLayoutContent({
   children,
   setSidebarWidth,
+  navigation = [],
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
@@ -121,7 +122,7 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  const activeMenuItem = navigation.find(item => item.href === location);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -209,20 +210,21 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.map(item => {
-                const isActive = location === item.path;
+              {navigation.map(item => {
+                const isActive = location === item.href;
+                const Icon = item.icon;
                 return (
-                  <SidebarMenuItem key={item.path}>
+                  <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      onClick={() => setLocation(item.path)}
-                      tooltip={item.label}
+                      onClick={() => setLocation(item.href)}
+                      tooltip={item.name}
                       className={`h-10 transition-all font-normal`}
                     >
-                      <item.icon
+                      <Icon
                         className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
                       />
-                      <span>{item.label}</span>
+                      <span>{item.name}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -279,7 +281,7 @@ function DashboardLayoutContent({
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-1">
                   <span className="tracking-tight text-foreground">
-                    {activeMenuItem?.label ?? APP_TITLE}
+                    {activeMenuItem?.name ?? APP_TITLE}
                   </span>
                 </div>
               </div>

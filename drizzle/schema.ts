@@ -25,4 +25,25 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Change requests table for tracking all change management requests
+ */
+export const changeRequests = mysqlTable("change_requests", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  reason: text("reason").notNull(),
+  affectedResources: text("affectedResources").notNull(),
+  assigneeId: int("assigneeId").notNull(),
+  prLink: varchar("prLink", { length: 512 }),
+  rollbackPlan: text("rollbackPlan").notNull(),
+  status: mysqlEnum("status", ["draft", "pending", "approved", "rejected", "implemented", "rolled_back"]).default("draft").notNull(),
+  priority: mysqlEnum("priority", ["low", "medium", "high", "critical"]).default("medium").notNull(),
+  createdById: int("createdById").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  scheduledDate: timestamp("scheduledDate"),
+  implementedAt: timestamp("implementedAt"),
+});
+
+export type ChangeRequest = typeof changeRequests.$inferSelect;
+export type InsertChangeRequest = typeof changeRequests.$inferInsert;
