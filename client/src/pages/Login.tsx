@@ -101,9 +101,9 @@ export default function Login() {
           </form>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Default credentials:</p>
-            <p className="font-mono text-xs mt-1">
-              Username: admin | Password: admin123
+            <p>Default admin username: <span className="font-mono font-semibold text-foreground">admin</span></p>
+            <p className="text-xs mt-1">
+              Password generated during setup - check initialization output
             </p>
           </div>
         </CardContent>

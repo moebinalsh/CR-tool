@@ -160,18 +160,25 @@ Run the admin initialization script:
 pnpm exec tsx server/init-admin.mjs
 ```
 
-This creates the default administrator account with:
-- **Username:** `admin`
-- **Password:** `admin123`
+This creates the default administrator account with a **randomly generated secure password**.
 
 **Expected output:**
 ```
-Default admin user created successfully!
-Username: admin
-Password: admin123
+======================================================================
+  ✓ DEFAULT ADMIN ACCOUNT CREATED SUCCESSFULLY!
+======================================================================
+
+  Username: admin
+  Password: xK9#mP2$vL8@qR5n
+
+======================================================================
+  ⚠️  IMPORTANT: Save this password now!
+  This password will NOT be shown again.
+  Change it immediately after first login in Settings.
+======================================================================
 ```
 
-⚠️ **Security Note:** You should change this password immediately after first login!
+⚠️ **Critical:** Copy and save the generated password immediately! It will not be displayed again.
 
 ---
 
@@ -211,9 +218,9 @@ You should see the **Change Management Tool** login page with the Salla logo.
 
 ### Step 9: Log In
 
-Enter the default credentials:
+Enter your admin credentials:
 - **Username:** `admin`
-- **Password:** `admin123`
+- **Password:** (the randomly generated password from Step 6)
 
 Click **Sign In**
 
@@ -225,16 +232,16 @@ You'll be redirected to the Dashboard showing:
 
 ---
 
-### Step 10: Change Default Password (Important!)
+### Step 10: Change Admin Password (Recommended)
 
-**For security, change the default password immediately:**
+**For security, change your admin password:**
 
 1. Click **Settings** in the left sidebar
 2. Scroll to the **Change Password** section
 3. Fill in the form:
-   - Current Password: `admin123`
-   - New Password: (your secure password)
-   - Confirm Password: (repeat your secure password)
+   - Current Password: (the generated password from Step 6)
+   - New Password: (your new secure password)
+   - Confirm Password: (repeat your new password)
 4. Click **Change Password**
 5. You'll see a success message
 
@@ -416,13 +423,13 @@ pnpm format           # Format code with Prettier
 
 ---
 
-## Default Credentials
+## Default Admin Account
 
 **Admin Account:**
 - Username: `admin`
-- Password: `admin123`
+- Password: Randomly generated during initialization (16 characters)
 
-⚠️ **Change this password immediately after first login!**
+⚠️ **Important:** The password is displayed only once when you run `pnpm exec tsx server/init-admin.mjs`. Save it securely!
 
 ---
 

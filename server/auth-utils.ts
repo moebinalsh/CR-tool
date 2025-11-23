@@ -17,11 +17,11 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 /**
- * Default admin credentials
+ * Default admin credentials (password generated during initialization)
+ * Run: pnpm exec tsx server/init-admin.mjs
  */
 export const DEFAULT_ADMIN = {
   username: "admin",
-  password: "admin123",
   name: "Administrator",
   email: "admin@salla.sa",
   role: "admin" as const,

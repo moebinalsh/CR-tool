@@ -2,10 +2,21 @@ import { drizzle } from "drizzle-orm/mysql2";
 import { users } from "../drizzle/schema.js";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+
+// Generate a secure random password
+function generateSecurePassword(length = 16) {
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  const randomBytes = crypto.randomBytes(length);
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += charset[randomBytes[i] % charset.length];
+  }
+  return password;
+}
 
 const DEFAULT_ADMIN = {
   username: "admin",
-  password: "admin123",
   name: "Administrator",
   email: "admin@salla.sa",
   role: "admin",
@@ -32,8 +43,9 @@ async function initAdmin() {
       return;
     }
 
-    // Create admin user
-    const passwordHash = await bcrypt.hash(DEFAULT_ADMIN.password, 10);
+    // Create admin user with generated password
+    const generatedPassword = generateSecurePassword(16);
+    const passwordHash = await bcrypt.hash(generatedPassword, 10);
     
     await db.insert(users).values({
       username: DEFAULT_ADMIN.username,
@@ -45,10 +57,16 @@ async function initAdmin() {
       lastSignedIn: new Date(),
     });
 
-    console.log("✓ Default admin account created");
-    console.log(`  Username: ${DEFAULT_ADMIN.username}`);
-    console.log(`  Password: ${DEFAULT_ADMIN.password}`);
-    console.log("  Please change the password after first login!");
+    console.log("\n" + "=".repeat(70));
+    console.log("  ✓ DEFAULT ADMIN ACCOUNT CREATED SUCCESSFULLY!");
+    console.log("=".repeat(70));
+    console.log("\n  Username: " + DEFAULT_ADMIN.username);
+    console.log("  Password: " + generatedPassword);
+    console.log("\n" + "=".repeat(70));
+    console.log("  ⚠️  IMPORTANT: Save this password now!");
+    console.log("  This password will NOT be shown again.");
+    console.log("  Change it immediately after first login in Settings.");
+    console.log("=".repeat(70) + "\n");
   } catch (error) {
     console.error("Failed to create admin:", error);
     process.exit(1);
