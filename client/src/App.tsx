@@ -10,7 +10,10 @@ import ChangeRequests from "./pages/ChangeRequests";
 import NewChangeRequest from "./pages/NewChangeRequest";
 import ChangeRequestDetail from "./pages/ChangeRequestDetail";
 import Settings from "./pages/Settings";
+import Login from "./pages/Login";
 import { LayoutDashboard, FileText, Plus, Settings as SettingsIcon } from "lucide-react";
+import { useAuth } from "./_core/hooks/useAuth";
+import { Loader2 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -20,6 +23,20 @@ const navigation = [
 ];
 
 function Router() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
   return (
     <Switch>
       <Route path={"/"}>
