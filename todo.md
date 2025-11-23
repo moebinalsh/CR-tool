@@ -94,3 +94,9 @@
 - [x] Generate random password for admin account creation
 - [x] Display generated password only once during initialization
 - [x] Update README with new password generation approach
+
+## Documentation Updates
+
+- [x] Add AWS RDS setup instructions to README
+- [x] Include security group configuration
+- [x] Document connection string format for RDS

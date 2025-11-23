@@ -107,6 +107,12 @@ DATABASE_URL=mysql://user:pass@db.example.com:3306/cr_tool
 PORT=3000
 ```
 
+**For AWS RDS (see detailed guide below):**
+```env
+DATABASE_URL=mysql://admin:yourpassword@cr-tool-db.xxxxxxxxxx.us-east-1.rds.amazonaws.com:3306/cr_tool
+PORT=3000
+```
+
 ---
 
 ### Step 4: Create the Database
@@ -305,6 +311,333 @@ This runs all backend tests including:
 - Change request CRUD operations
 - Notification system tests
 - User management tests
+
+---
+
+## Using AWS RDS as Database
+
+This guide shows you how to set up Amazon RDS (Relational Database Service) as your production database for the CR Tool.
+
+### Why Use AWS RDS?
+
+- **Managed Service**: Automatic backups, patching, and maintenance
+- **High Availability**: Multi-AZ deployments for failover support
+- **Scalability**: Easy to scale compute and storage resources
+- **Security**: VPC isolation, encryption at rest and in transit
+- **Monitoring**: Built-in CloudWatch metrics and performance insights
+
+---
+
+### Step-by-Step AWS RDS Setup
+
+#### Step 1: Create an AWS Account
+
+1. Go to https://aws.amazon.com/
+2. Click **Create an AWS Account**
+3. Follow the registration process
+4. Add payment method (free tier available)
+
+---
+
+#### Step 2: Access RDS Console
+
+1. Log into AWS Console: https://console.aws.amazon.com/
+2. In the search bar, type **RDS**
+3. Click **RDS** under Services
+4. Click **Create database**
+
+---
+
+#### Step 3: Configure Database Settings
+
+**Choose a database creation method:**
+- Select **Standard create** (for full control)
+
+**Engine options:**
+- Engine type: **MySQL**
+- Engine version: **MySQL 8.0.35** (or latest)
+
+**Templates:**
+- For production: Choose **Production**
+- For testing: Choose **Free tier** (if eligible)
+
+**Settings:**
+- DB instance identifier: `cr-tool-db` (or your preferred name)
+- Master username: `admin` (or your preferred username)
+- Master password: Create a strong password
+- Confirm password: Re-enter the password
+
+⚠️ **Important:** Save these credentials securely! You'll need them for the DATABASE_URL.
+
+---
+
+#### Step 4: Configure Instance Size
+
+**DB instance class:**
+- For free tier: **db.t3.micro** or **db.t2.micro**
+- For production: **db.t3.small** or higher based on your needs
+
+**Storage:**
+- Storage type: **General Purpose SSD (gp3)**
+- Allocated storage: **20 GB** (minimum, adjust as needed)
+- Enable storage autoscaling: ✅ (recommended)
+- Maximum storage threshold: **100 GB** (or your limit)
+
+---
+
+#### Step 5: Configure Connectivity
+
+**Compute resource:**
+- Don't connect to an EC2 compute resource (unless you have one)
+
+**Network type:**
+- IPv4
+
+**Virtual private cloud (VPC):**
+- Select your default VPC or create a new one
+
+**DB subnet group:**
+- Use default
+
+**Public access:**
+- **Yes** (if connecting from your local machine)
+- **No** (if only connecting from AWS resources like EC2)
+
+⚠️ **Security Note:** For production, use **No** and connect via VPN or AWS resources only.
+
+**VPC security group:**
+- Create new
+- Name: `cr-tool-db-sg`
+
+**Availability Zone:**
+- No preference (or select specific AZ)
+
+---
+
+#### Step 6: Configure Database Authentication
+
+**Database authentication:**
+- Password authentication (default)
+
+---
+
+#### Step 7: Additional Configuration
+
+**Database options:**
+- Initial database name: `cr_tool`
+- DB parameter group: default
+- Option group: default
+
+**Backup:**
+- Enable automatic backups: ✅
+- Backup retention period: **7 days** (recommended)
+- Backup window: No preference
+
+**Encryption:**
+- Enable encryption: ✅ (recommended for production)
+- AWS KMS key: (default) aws/rds
+
+**Monitoring:**
+- Enable Enhanced Monitoring: ✅ (optional, costs extra)
+
+**Maintenance:**
+- Enable auto minor version upgrade: ✅
+
+---
+
+#### Step 8: Create Database
+
+1. Review all settings
+2. Click **Create database**
+3. Wait 5-10 minutes for the database to be created
+4. Status will change from "Creating" to "Available"
+
+---
+
+#### Step 9: Configure Security Group
+
+**Allow inbound connections to your database:**
+
+1. Go to **EC2 Console** → **Security Groups**
+2. Find the security group you created (e.g., `cr-tool-db-sg`)
+3. Click on the security group
+4. Go to **Inbound rules** tab
+5. Click **Edit inbound rules**
+6. Click **Add rule**
+7. Configure:
+   - Type: **MySQL/Aurora**
+   - Protocol: **TCP**
+   - Port: **3306**
+   - Source:
+     - **My IP** (for local development - automatically detects your IP)
+     - Or **Custom** and enter your IP address (e.g., `203.0.113.0/32`)
+     - Or **Anywhere-IPv4** (`0.0.0.0/0`) - ⚠️ **NOT recommended for production!**
+8. Click **Save rules**
+
+**For production:**
+- Only allow specific IPs or VPC CIDR blocks
+- Use AWS VPN or Direct Connect for secure access
+- Consider using AWS PrivateLink
+
+---
+
+#### Step 10: Get Database Endpoint
+
+1. Go back to **RDS Console**
+2. Click on your database instance (`cr-tool-db`)
+3. In the **Connectivity & security** tab, find:
+   - **Endpoint**: `cr-tool-db.xxxxxxxxxx.us-east-1.rds.amazonaws.com`
+   - **Port**: `3306`
+4. Copy the endpoint address
+
+---
+
+#### Step 11: Update Your .env File
+
+Update your `.env` file with the RDS connection details:
+
+```env
+DATABASE_URL=mysql://admin:YourStrongPassword@cr-tool-db.xxxxxxxxxx.us-east-1.rds.amazonaws.com:3306/cr_tool
+PORT=3000
+```
+
+**Replace:**
+- `admin` → your master username from Step 3
+- `YourStrongPassword` → your master password from Step 3
+- `cr-tool-db.xxxxxxxxxx.us-east-1.rds.amazonaws.com` → your endpoint from Step 10
+- `cr_tool` → your initial database name from Step 7
+
+**Example:**
+```env
+DATABASE_URL=mysql://admin:MySecurePass123!@cr-tool-db.abc123xyz.us-east-1.rds.amazonaws.com:3306/cr_tool
+PORT=3000
+```
+
+---
+
+#### Step 12: Test Connection
+
+Test the connection from your local machine:
+
+**Using MySQL CLI:**
+```bash
+mysql -h cr-tool-db.xxxxxxxxxx.us-east-1.rds.amazonaws.com -P 3306 -u admin -p
+```
+
+Enter your password when prompted.
+
+If successful, you'll see:
+```
+Welcome to the MySQL monitor.
+mysql>
+```
+
+Type `SHOW DATABASES;` to verify the `cr_tool` database exists.
+
+**Using the application:**
+```bash
+pnpm db:push
+```
+
+This should connect to RDS and create the tables.
+
+---
+
+#### Step 13: Initialize Admin Account
+
+Run the initialization script to create the admin user:
+
+```bash
+pnpm exec tsx server/init-admin.mjs
+```
+
+Save the generated password securely.
+
+---
+
+#### Step 14: Start Your Application
+
+```bash
+pnpm dev
+```
+
+Your application is now connected to AWS RDS!
+
+---
+
+### AWS RDS Best Practices
+
+**Security:**
+- ✅ Use strong master passwords (16+ characters, mixed case, numbers, symbols)
+- ✅ Restrict security group rules to specific IPs only
+- ✅ Enable encryption at rest
+- ✅ Enable SSL/TLS for connections in transit
+- ✅ Regularly rotate credentials
+- ✅ Use AWS Secrets Manager for password storage
+- ❌ Never use `0.0.0.0/0` (anywhere) in production security groups
+- ❌ Never commit DATABASE_URL with credentials to Git
+
+**Performance:**
+- Monitor database performance with CloudWatch
+- Enable Performance Insights for query analysis
+- Set up automated backups
+- Use read replicas for read-heavy workloads
+- Consider Multi-AZ deployment for high availability
+
+**Cost Optimization:**
+- Start with smaller instance types (db.t3.micro)
+- Use Reserved Instances for production (up to 60% savings)
+- Enable storage autoscaling to avoid over-provisioning
+- Delete snapshots you no longer need
+- Monitor costs with AWS Cost Explorer
+
+**Backup & Recovery:**
+- Enable automated backups (7-35 days retention)
+- Take manual snapshots before major changes
+- Test your backup restoration process
+- Consider cross-region snapshot copies for disaster recovery
+
+---
+
+### AWS RDS Troubleshooting
+
+**Cannot connect to RDS:**
+1. Check security group inbound rules allow your IP on port 3306
+2. Verify "Public accessibility" is set to "Yes" (if connecting from outside AWS)
+3. Check VPC and subnet configuration
+4. Verify database status is "Available"
+5. Test with MySQL CLI before testing with the app
+
+**Connection timeout:**
+- Your IP may have changed (update security group)
+- Firewall blocking outbound connections on port 3306
+- RDS instance may be in different region than expected
+
+**Authentication failed:**
+- Double-check username and password
+- Ensure no special characters are causing URL encoding issues
+- Try URL-encoding the password if it contains special characters
+
+**Database not found:**
+- Verify you created the initial database name in Step 7
+- Or create it manually: `CREATE DATABASE cr_tool;`
+
+---
+
+### AWS RDS Costs
+
+**Free Tier (12 months):**
+- 750 hours per month of db.t2.micro or db.t3.micro
+- 20 GB of General Purpose (SSD) storage
+- 20 GB of backup storage
+
+**After Free Tier:**
+- db.t3.micro: ~$15-20/month (us-east-1)
+- db.t3.small: ~$30-40/month
+- Storage: ~$0.115 per GB/month
+- Backup storage: Free up to 100% of database storage
+
+**Check current pricing:** https://aws.amazon.com/rds/mysql/pricing/
 
 ---
 
