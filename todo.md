@@ -79,3 +79,11 @@
 - [x] Update notification logic to only show pending status CRs
 - [x] Remove approved/rejected CRs from notification dropdown
 - [x] Test complete login and notification flow
+
+## GitHub Deployment
+
+- [ ] Remove all Manus OAuth dependencies and references
+- [ ] Clean up unused OAuth-related files
+- [ ] Create GitHub repository "CR-tool"
+- [ ] Push code to GitHub
+- [ ] Verify repository is accessible
