@@ -1,5 +1,5 @@
 import { getLoginUrl } from "@/const";
-import { trpc } from "@/lib/trpc";
+import { trpc, clearAuthToken } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -36,6 +36,7 @@ export function useAuth(options?: UseAuthOptions) {
       }
       throw error;
     } finally {
+      clearAuthToken(); // Clear stored token
       utils.auth.me.setData(undefined, null);
       await utils.auth.me.invalidate();
     }

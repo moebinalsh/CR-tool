@@ -111,10 +111,10 @@ export const appRouter = router({
     myPendingReviews: protectedProcedure.query(async ({ ctx }) => {
       const allCRs = await db.getAllChangeRequests();
       
-      // Filter CRs that are assigned to this user and pending review
+      // Filter CRs that are assigned to this user and only pending status
       return allCRs.filter(cr => 
         cr.assigneeId === ctx.user.id && 
-        (cr.status === "pending" || cr.status === "approved")
+        cr.status === "pending"
       );
     }),
   }),

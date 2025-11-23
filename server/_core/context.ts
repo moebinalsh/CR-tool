@@ -20,7 +20,16 @@ export async function createContext(
   let user: User | null = null;
 
   // Try local JWT authentication first
-  const token = opts.req.cookies?.[COOKIE_NAME];
+  let token = opts.req.cookies?.[COOKIE_NAME];
+  
+  // If no cookie, check Authorization header
+  if (!token) {
+    const authHeader = opts.req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
+  
   if (token) {
     try {
       const decoded = jwt.verify(token, ENV.cookieSecret) as { userId: number };
@@ -40,15 +49,15 @@ export async function createContext(
     }
   }
 
-  // Fallback to OAuth if local auth didn't work
-  if (!user) {
-    try {
-      user = await sdk.authenticateRequest(opts.req);
-    } catch (error) {
-      // Authentication is optional for public procedures.
-      user = null;
-    }
-  }
+  // Disable OAuth fallback - only use local authentication
+  // if (!user) {
+  //   try {
+  //     user = await sdk.authenticateRequest(opts.req);
+  //   } catch (error) {
+  //     // Authentication is optional for public procedures.
+  //     user = null;
+  //   }
+  // }
 
   return {
     req: opts.req,

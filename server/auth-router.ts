@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { getDb } from "./db";
 import { users } from "../drizzle/schema";
@@ -33,7 +33,14 @@ const updateUserRoleSchema = z.object({
   role: z.enum(["user", "admin"]),
 });
 
-export const authRouter = router({
+export const authRouter = router({  
+  // Test endpoint
+  test: publicProcedure
+    .input(z.object({ message: z.string() }))
+    .mutation(async ({ input }) => {
+      return { received: input };
+    }),
+
   // Local login with username/password
   login: publicProcedure
     .input(loginSchema)
@@ -88,6 +95,7 @@ export const authRouter = router({
 
       return {
         success: true,
+        token, // Return token in response for client-side storage
         user: {
           id: user.id,
           username: user.username,

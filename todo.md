@@ -71,3 +71,11 @@
 - [x] Show notification count badge on bell icon
 - [x] Display dropdown with pending CRs when bell is clicked
 - [x] Link notifications to CR detail pages
+
+## Bug Fixes
+
+- [x] Fix login not working with default admin credentials
+- [x] Verify login works for all created users
+- [x] Update notification logic to only show pending status CRs
+- [x] Remove approved/rejected CRs from notification dropdown
+- [x] Test complete login and notification flow

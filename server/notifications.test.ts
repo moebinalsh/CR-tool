@@ -120,9 +120,10 @@ describe("notification procedures", () => {
 
     const pendingReviews = await caller.changeRequests.myPendingReviews();
 
-    expect(pendingReviews.length).toBe(2);
+    // Should only return pending CRs, not approved ones
+    expect(pendingReviews.length).toBe(1);
     expect(pendingReviews.some(cr => cr.id === pendingCRId)).toBe(true);
-    expect(pendingReviews.some(cr => cr.id === approvedCRId)).toBe(true);
+    expect(pendingReviews.some(cr => cr.id === approvedCRId)).toBe(false);
     expect(pendingReviews.every(cr => cr.assigneeId === testUser1Id)).toBe(true);
   });
 
@@ -151,7 +152,7 @@ describe("notification procedures", () => {
     expect(pendingReviews.every(cr => cr.assigneeId === testUser2Id)).toBe(true);
   });
 
-  it("should only include pending and approved statuses", async () => {
+  it("should only include pending status", async () => {
     const authenticatedUser: AuthenticatedUser = {
       id: testUser1Id,
       username: "notifuser1",
@@ -172,7 +173,7 @@ describe("notification procedures", () => {
     const pendingReviews = await caller.changeRequests.myPendingReviews();
 
     expect(pendingReviews.every(cr => 
-      cr.status === "pending" || cr.status === "approved"
+      cr.status === "pending"
     )).toBe(true);
   });
 });

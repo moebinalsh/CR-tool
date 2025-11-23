@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { trpc, setAuthToken } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,11 @@ export default function Login() {
   const [password, setPassword] = useState("");
   
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Store token in localStorage
+      if (data.token) {
+        setAuthToken(data.token);
+      }
       toast.success("Login successful!");
       // Reload to trigger auth check
       window.location.href = "/";
