@@ -9,12 +9,14 @@ import Dashboard from "./pages/Dashboard";
 import ChangeRequests from "./pages/ChangeRequests";
 import NewChangeRequest from "./pages/NewChangeRequest";
 import ChangeRequestDetail from "./pages/ChangeRequestDetail";
-import { LayoutDashboard, FileText, Plus } from "lucide-react";
+import Settings from "./pages/Settings";
+import { LayoutDashboard, FileText, Plus, Settings as SettingsIcon } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Change Requests", href: "/change-requests", icon: FileText },
   { name: "New CR", href: "/new-change-request", icon: Plus },
+  { name: "Settings", href: "/settings", icon: SettingsIcon },
 ];
 
 function Router() {
@@ -38,6 +40,11 @@ function Router() {
       <Route path={"/change-requests/:id"}>
         <DashboardLayout navigation={navigation}>
           <ChangeRequestDetail />
+        </DashboardLayout>
+      </Route>
+      <Route path={"/settings"}>
+        <DashboardLayout navigation={navigation}>
+          <Settings />
         </DashboardLayout>
       </Route>
       <Route path={"/404"} component={NotFound} />

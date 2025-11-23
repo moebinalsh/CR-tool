@@ -2,8 +2,10 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Activity, CheckCircle2, Clock, FileText, XCircle, AlertTriangle } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Dashboard() {
+  const [, setLocation] = useLocation();
   const { data: stats, isLoading: statsLoading } = trpc.changeRequests.stats.useQuery();
   const { data: recentCRs, isLoading: recentLoading } = trpc.changeRequests.getRecent.useQuery({ limit: 5 });
 
@@ -64,7 +66,11 @@ export default function Dashboard() {
           statCards.map((stat) => {
             const Icon = stat.icon;
             return (
-              <Card key={stat.title}>
+              <Card 
+                key={stat.title} 
+                className="cursor-pointer transition-all hover:shadow-md hover:scale-105"
+                onClick={() => setLocation('/change-requests')}
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                   <Icon className={`h-4 w-4 ${stat.color}`} />

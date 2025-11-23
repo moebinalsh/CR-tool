@@ -32,3 +32,16 @@
 - [x] Update branding to match Salla colors and style
 - [x] Replace logo with Salla logo
 - [x] Update color scheme to Salla's teal/mint and dark teal colors
+
+## Issues to Fix
+
+- [x] Fix logo visibility and clarity in navigation
+- [x] Improve Salla brand colors to be more prominent
+- [x] Fix logo and title appearance in navigation tab
+- [x] Make dashboard stat containers clickable
+
+## New Features
+
+- [x] Add Settings page
+- [x] Admin user management (add/remove users)
+- [x] User profile updates (password, photo)
